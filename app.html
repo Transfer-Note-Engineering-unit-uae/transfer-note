@@ -4,7 +4,7 @@
 <script>
 (function(){
 "use strict";
-window.__tnT0=Date.now();
+try{ sessionStorage.setItem("tnT0", String(Date.now())); }catch(e){}
 var X="https://script.google.com/macros/s/AKfycbygXZuuaWuLRKp2kbSfOR9_1P4XC_TbMTyXzU83NsQIbp4TViTFauwW_O4QmRnBhh2P/exec";
 var params={}; try{ new URLSearchParams(location.search).forEach(function(v,k){params[k]=v;}); }catch(e){} params.via="pages";
 var NOOP=function(){};
@@ -245,7 +245,7 @@ function tmo(p,ms){ return new Promise(function(res,rej){ var t=setTimeout(funct
 function fetchHtml(){ return tmo(fetch(X+"?api=html").then(function(r){return r.json();}),60000).then(function(j){ if(!j||!j.html||j.html.length<5000) throw new Error("bad reply"); return j; }); }
 function fetchVer(){ return tmo(fetch(X+"?api=ver").then(function(r){return r.json();}),30000).then(function(j){ return j&&j.v; }); }
 function fetchBundled(){ return fetch("bundled.html").then(function(r){ if(!r.ok) throw new Error("none"); return r.text(); }).then(function(h){ if(h.length<5000) throw new Error("none"); return fetch("bundled.ver").then(function(r){ return r.ok?r.text():""; }).catch(function(){ return ""; }).then(function(v){ return {html:h,v:String(v).trim()}; }); }); }
-function checkUpdate(cur){ fetchVer().then(function(v){ if(v&&v!==ls("tn-appv")){ return fetchHtml().then(function(j){ return cachePut(j.html).then(function(){ ls("tn-appv",j.v); if(j.html!==cur){ window.__tnUpdate=true; var ae=document.activeElement, busy=ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName); if(!busy && Date.now()-(window.__tnT0||0) < 60000){ location.reload(); return; } bar(); } }); }); } }).catch(NOOP); }
+function checkUpdate(cur){ fetchVer().then(function(v){ if(v&&v!==ls("tn-appv")){ return fetchHtml().then(function(j){ return cachePut(j.html).then(function(){ ls("tn-appv",j.v); if(j.html!==cur){ window.__tnUpdate=true; var ae=document.activeElement, busy=ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName); if(!busy && Date.now()-(function(){ try{ return +sessionStorage.getItem("tnT0") || 0; }catch(e){ return 0; } })() < 60000){ location.reload(); return; } bar(); } }); }); } }).catch(NOOP); }
 function fail(e){ var m=document.getElementById("tnmsg"); if(m){ m.textContent="Could not load the app ("+(e&&e.message||e)+"). Check internet and tap here to try again."; m.onclick=function(){ location.reload(); }; } try{ parent.postMessage("tn-ready","*"); }catch(x){} }
 function boot(html){
   window.__tnInit=function(){
